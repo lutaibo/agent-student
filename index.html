@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent 开发工程师 · 6 周冲刺计划（前端优化版）</title>
+<style>
+  :root {
+    --bg: #0f1117; --card: #181b24; --card-hover: #1f2330; --border: #2a2f3d;
+    --text: #e6e8ee; --muted: #8b92a5; --accent: #5b8cff; --accent2: #3ddc97;
+    --warn: #ffb454; --danger: #ff6b6b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6; padding: 24px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 32px; }
+  header h1 { font-size: 28px; margin-bottom: 8px; }
+  header p { color: var(--muted); font-size: 14px; }
+  .badge {
+    display: inline-block; background: rgba(91,140,255,.15); color: var(--accent);
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-top: 12px;
+  }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; justify-content: center; }
+  .tab {
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    padding: 10px 18px; border-radius: 10px; cursor: pointer; font-size: 14px;
+    transition: all .2s;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--text); }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .week { display: none; }
+  .week.active { display: block; animation: fadeIn .3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .week-header {
+    background: linear-gradient(135deg, rgba(91,140,255,.12), rgba(61,220,151,.08));
+    border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 20px;
+  }
+  .week-header h2 { font-size: 22px; margin-bottom: 6px; }
+  .week-header .goal { color: var(--muted); font-size: 14px; }
+  .week-header .goal strong { color: var(--accent2); }
+  .day-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .day-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; transition: all .2s;
+  }
+  .day-card:hover { background: var(--card-hover); border-color: var(--accent); }
+  .day-card .day-title {
+    font-weight: 700; font-size: 15px; margin-bottom: 12px; color: var(--accent);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .day-card .day-title .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block;
+  }
+  .slot { margin-bottom: 10px; }
+  .slot-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 3px;
+  }
+  .slot-text { font-size: 13.5px; }
+  .accept {
+    margin-top: 20px; background: rgba(61,220,151,.08); border: 1px solid rgba(61,220,151,.25);
+    border-radius: 10px; padding: 14px 18px; font-size: 14px;
+  }
+  .accept strong { color: var(--accent2); }
+  .risk {
+    margin-top: 12px; background: rgba(255,180,84,.08); border: 1px solid rgba(255,180,84,.25);
+    border-radius: 10px; padding: 14px 18px; font-size: 13.5px; color: var(--warn);
+  }
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 28px; font-size: 13px; color: var(--muted); }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  footer { text-align: center; margin-top: 36px; color: var(--muted); font-size: 12px; }
+  @media (max-width: 600px) { body { padding: 14px; } .day-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Agent 开发工程师 · 6 周冲刺计划</h1>
+    <p>高级前端工程师优化版 · 整日学习 · 每天 7 小时有效学习</p>
+    <span class="badge">手写循环 → RAG+ES → LangGraph.js → 评估 → Next.js 全栈项目 → 面试</span>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="weeks"></div>
+
+  <div class="legend">
+    <span><i style="background:var(--accent)"></i> 上午 3h · 专注编码/实验</span>
+    <span><i style="background:var(--accent2)"></i> 下午 3h · 整合/测试/文档</span>
+    <span><i style="background:var(--muted)"></i> 晚上 1h · 复盘/笔记</span>
+  </div>
+  <footer>三条底线：手写 ReAct 循环 · 评估集 · 可复现项目 —— 任何情况下不砍</footer>
+</div>
+
+<script>
+const PLAN = [
+  {
+    week: "第 1 周",
+    title: "Agent 基础设施 + 手写 ReAct",
+    goal: "产出：<strong>AgentClient（流式、重试、Zod Schema）+ 零框架 ReAct 循环</strong>",
+    days: [
+      { day: "周一", am: "用 Vercel AI SDK 或 openai Node SDK 封装 AgentClient，支持流式", pm: "加超时、指数退避重试、请求日志", night: "推 GitHub，写 README" },
+      { day: "周二", am: "用 Zod 定义工具参数 Schema 和响应结构", pm: "把流式输出接到 Next.js API Route，curl 验证", night: "复盘：客户端还缺什么" },
+      { day: "周三", am: "定义 3 个工具（计算器、时间、模拟搜索）的 function calling Schema", pm: "写 while 循环骨架：请求 → 检查 tool_calls → 执行 → 拼回", night: "记录单轮跑通的问题" },
+      { day: "周四", am: "跑通单工具调用", pm: "扩展到多工具串行，处理 tool_call_id 匹配", night: "复盘并行工具调用的坑" },
+      { day: "周五", am: "加终止条件（无工具调用 / 最大 10 轮）", pm: "测试死循环场景，加迭代日志", night: "整理代码结构" },
+      { day: "周六", am: "把流式输出接进循环，观察工具调用中的流式行为", pm: "对照 langchain-nextjs 项目看差异", night: "写本周技术笔记" },
+      { day: "周日", am: "半天复盘：整理 3 个手写坑（JSON 解析、tool_call_id、并行调用）", pm: "缓冲 / 补漏", night: "—" }
+    ],
+    accept: "输入“查北京天气再算 25×3”，Agent 依次调两个工具给出答案，代码零 LangChain 导入。",
+    risk: "若周三手写循环未跑通，周四砍掉流式接入循环的实验，优先保住多工具串行 + 终止条件。"
+  },
+  {
+    week: "第 2 周",
+    title: "RAG + ES 混合检索",
+    goal: "产出：<strong>BM25 + 向量 + RRF 融合 + Rerank 的完整检索管线，带对比数据</strong>",
+    days: [
+      { day: "周一", am: "Docker 起 ElasticSearch，建索引，灌测试文档", pm: "用 ES BM25 做关键词检索，调 k1/b 观察召回", night: "记录调参结论" },
+      { day: "周二", am: "加向量检索（Chroma 或 ES dense_vector）", pm: "实现 RRF 融合，对比加权融合", night: "复盘融合策略差异" },
+      { day: "周三", am: "接入 Rerank（本地 bge-reranker 或 Cohere 免费额度）", pm: "造 15 条测试问题，跑纯向量 vs BM25 vs 混合 vs 混合+Rerank", night: "整理对比表初稿" },
+      { day: "周四", am: "补 chunk size 对比实验（256/512/1024）", pm: "把检索管线封装成可复用模块", night: "记录 chunk 结论" },
+      { day: "周五", am: "把 RAG 模块接入第 1 周的 Agent 作为工具", pm: "端到端测试：Agent 调 RAG 工具回答问题", night: "复盘端到端问题" },
+      { day: "周六", am: "优化检索失败案例（查询改写 / HyDE 任选其一尝试）", pm: "更新对比表，写清楚每步提升多少", night: "写本周技术笔记" },
+      { day: "周日", am: "半天复盘：ES 调参 + 融合策略 + Rerank 三块结论", pm: "缓冲 / 补漏", night: "—" }
+    ],
+    accept: "一张对比表，能说出“混合+Rerank 把 Top-3 命中率从 X% 提到 Y%”；RAG 已作为工具被 Agent 调用。",
+    risk: "ES 环境若起不来，先用 Chroma + BM25 库替代，但对比实验不能省。"
+  },
+  {
+    week: "第 3 周",
+    title: "LangGraph.js + 记忆 + 可观测性",
+    goal: "产出：<strong>LangGraph.js 版 Agent（checkpointer、短期+长期记忆）+ LangSmith trace + 流式 UI</strong>",
+    days: [
+      { day: "周一", am: "读 LangGraph.js 文档：StateGraph、节点、条件边、checkpointer", pm: "把第 1 周 ReAct 改写成 LangGraph.js 版", night: "记录改写中的概念差异" },
+      { day: "周二", am: "加 checkpointer，测试中断恢复", pm: "加短期记忆（滑动窗口 N 轮）", night: "复盘状态管理" },
+      { day: "周三", am: "加长期记忆（对话摘要存向量库，需要时召回）", pm: "接 LangSmith，跑一次看完整 trace", night: "记录 trace 中的异常" },
+      { day: "周四", am: "在 trace 中定位一次工具失败或跑偏，写排查过程", pm: "实现模型路由：简单任务小模型，复杂推理大模型", night: "记录路由策略" },
+      { day: "周五", am: "加迭代上限 + 工具失败指数退避", pm: "用 AI SDK streamText 或原生 SSE 做流式对话组件", night: "处理 markdown 逐字渲染" },
+      { day: "周六", am: "加 AbortController 中断请求 + SSE 断线重连", pm: "对比手写版 vs LangGraph.js 版各解决了什么", night: "写本周技术笔记" },
+      { day: "周日", am: "半天复盘：状态管理、记忆、可观测性、流式四块笔记", pm: "缓冲 / 补漏", night: "—" }
+    ],
+    accept: "LangGraph.js 版 Agent 跑通多工具任务，中断后可从 checkpointer 恢复；trace 可回放；流式 UI 可中断。",
+    risk: "LangGraph.js 改写若卡住，允许退回手写版加简单状态管理，但 trace 和流式 UI 不能省。"
+  },
+  {
+    week: "第 4 周",
+    title: "评估体系 + 成本优化",
+    goal: "产出：<strong>20–30 条测试集 + 批量评估脚本 + 优化前后对比表 + 模型路由效果数据</strong>",
+    days: [
+      { day: "周一", am: "读 Google/Kaggle Agent 评估白皮书，摘可落地维度", pm: "准备 20–30 条测试问题，每条带判定标准", night: "分类测试问题类型" },
+      { day: "周二", am: "写批量评估脚本：跑 Agent → 记录成功率、Token、轮次、延迟", pm: "跑第一轮基线，记录数据", night: "分析失败案例类型" },
+      { day: "周三", am: "针对失败案例做优化（Prompt / 检索 / 路由），再跑一轮", pm: "对比两轮数据，做对比表", night: "记录优化点" },
+      { day: "周四", am: "补模型路由实验：同一批问题走小模型 vs 大模型，对比成本和质量", pm: "更新对比表，算清成本节省比例", night: "复盘路由边界" },
+      { day: "周五", am: "把评估脚本做成可配置（换测试集、换模型、换 Prompt）", pm: "跑一次完整评估，确认可复现", night: "写评估文档" },
+      { day: "周六", am: "整理所有对比数据成一张总表（检索、路由、Prompt 各维度）", pm: "写清楚“每项优化提升了多少、花了多少成本”", night: "写本周技术笔记" },
+      { day: "周日", am: "半天复盘：评估方法论 + 数据驱动迭代的讲述框架", pm: "缓冲 / 补漏", night: "—" }
+    ],
+    accept: "一张总表覆盖检索优化、模型路由、Prompt 调整三个维度的前后对比，数据可复现。",
+    risk: "若落后超过 3 天，砍模型路由实验，保住评估集和对比表。"
+  },
+  {
+    week: "第 5 周",
+    title: "Next.js 全栈项目",
+    goal: "产出：<strong>可演示、可复现的 Next.js Agent 应用，带流式 UI 和工具调用状态展示</strong>",
+    days: [
+      { day: "周一", am: "定场景（个人知识库问答 或 代码审查 Agent），画架构图", pm: "搭 Next.js App Router 项目骨架，整合 Agent 核心模块", night: "确认模块边界" },
+      { day: "周二", am: "整合 RAG 模块 + 记忆系统", pm: "整合评估脚本，确保项目内可跑评估", night: "记录整合中的接口问题" },
+      { day: "周三", am: "做 API Route（/chat、/health、/eval）", pm: "做前端对话界面：流式渲染 + markdown", night: "处理工具调用状态展示" },
+      { day: "周四", am: "加“正在搜索…”等工具调用状态 UI", pm: "加错误处理：工具失败、超时、中断的用户提示", night: "复盘交互细节" },
+      { day: "周五", am: "写 README：环境变量、启动步骤、示例请求、评估结果", pm: "写 Dockerfile，docker build + run 验证", night: "整理项目截图" },
+      { day: "周六", am: "干净环境从零按 README 跑通，修所有坑", pm: "录 2 分钟演示视频", night: "写项目技术决策文档" },
+      { day: "周日", am: "半天复盘：项目讲述框架（架构 → 取舍 → 数据 → 演示）", pm: "缓冲 / 补漏", night: "—" }
+    ],
+    accept: "别人 git clone 后按 README 15 分钟内跑起来完成一次问答；有演示视频和技术决策文档。",
+    risk: "这是王牌项目，任何情况下不砍。若时间紧，砍第 4 周的模型路由实验来保这里。"
+  },
+  {
+    week: "第 6 周",
+    title: "面试定向 + 项目打磨",
+    goal: "产出：<strong>5 个踩坑故事 + Agent 高频题答案 + 前端 AI 考点答案 + 模拟面试</strong>",
+    days: [
+      { day: "周一", am: "过 Agent 高频题（ReAct 防死循环、RAG 排查、多 Agent 必要性）", pm: "每题用自己项目数据写答案", night: "标记不会的题" },
+      { day: "周二", am: "过前端 AI 考点（SSE vs WebSocket、流式 Markdown、AbortController）", pm: "补后端中间件短板（ES 混合检索、Redis 在 Agent 场景用途）", night: "整理答案卡片" },
+      { day: "周三", am: "把第 1/2/3/4 周复盘整理成 5 个踩坑故事", pm: "每个故事按“背景 → 问题 → 排查 → 解决 → 数据”写", night: "打磨故事讲述" },
+      { day: "周四", am: "模拟面试：讲项目 8 分钟", pm: "回答 3 个追问（防死循环、RAG 优化、成本控制）", night: "记录反馈" },
+      { day: "周五", am: "根据反馈补薄弱点", pm: "更新项目 README 技术决策一节", night: "重录演示（如需）" },
+      { day: "周六", am: "最终检查：仓库、演示、数据表、故事线", pm: "模拟第二轮面试，换人/换角度追问", night: "查漏补缺" },
+      { day: "周日", am: "半天复盘：确认三条底线（手写循环、评估集、可复现项目）都扎实", pm: "缓冲", night: "—" }
+    ],
+    accept: "8 分钟讲清项目架构、3 个技术取舍、2 组对比数据；高频题都有基于自己项目的答案。",
+    risk: "三条底线任何情况下不砍：手写 ReAct 循环、评估集、可复现项目。"
+  }
+];
+
+const tabsEl = document.getElementById('tabs');
+const weeksEl = document.getElementById('weeks');
+
+PLAN.forEach((w, i) => {
+  const tab = document.createElement('button');
+  tab.className = 'tab' + (i === 0 ? ' active' : '');
+  tab.textContent = w.week;
+  tab.onclick = () => switchWeek(i);
+  tabsEl.appendChild(tab);
+
+  const section = document.createElement('div');
+  section.className = 'week' + (i === 0 ? ' active' : '');
+  section.id = 'week-' + i;
+
+  let html = `
+    <div class="week-header">
+      <h2>${w.week} · ${w.title}</h2>
+      <p class="goal">${w.goal}</p>
+    </div>
+    <div class="day-grid">
+  `;
+  w.days.forEach(d => {
+    html += `
+      <div class="day-card">
+        <div class="day-title"><span class="dot"></span>${d.day}</div>
+        <div class="slot"><div class="slot-label">上午 · 3h</div><div class="slot-text">${d.am}</div></div>
+        <div class="slot"><div class="slot-label">下午 · 3h</div><div class="slot-text">${d.pm}</div></div>
+        <div class="slot"><div class="slot-label">晚上 · 1h</div><div class="slot-text">${d.night}</div></div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  html += `<div class="accept"><strong>验收标准：</strong>${w.accept}</div>`;
+  html += `<div class="risk"><strong>风险预案：</strong>${w.risk}</div>`;
+  section.innerHTML = html;
+  weeksEl.appendChild(section);
+});
+
+function switchWeek(idx) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  document.querySelectorAll('.week').forEach((s, i) => s.classList.toggle('active', i === idx));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
