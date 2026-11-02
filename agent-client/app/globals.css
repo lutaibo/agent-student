@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* 助手回答的 markdown 排版（不引入 typography 插件，够用就行） */
+.md > * + * {
+  margin-top: 0.5rem;
+}
+.md ul,
+.md ol {
+  padding-left: 1.25rem;
+}
+.md ul {
+  list-style: disc;
+}
+.md ol {
+  list-style: decimal;
+}
+.md li + li {
+  margin-top: 0.25rem;
+}
+.md h1,
+.md h2,
+.md h3 {
+  font-weight: 600;
+}
+.md h1 {
+  font-size: 1.25rem;
+}
+.md h2 {
+  font-size: 1.125rem;
+}
+.md a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.md code {
+  background: color-mix(in oklab, currentColor 12%, transparent);
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+.md pre {
+  background: #18181b;
+  color: #f4f4f5;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.md pre code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+}
+.md blockquote {
+  border-left: 3px solid color-mix(in oklab, currentColor 30%, transparent);
+  padding-left: 0.75rem;
+  opacity: 0.85;
+}
+.md table {
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.md th,
+.md td {
+  border: 1px solid color-mix(in oklab, currentColor 25%, transparent);
+  padding: 0.25rem 0.5rem;
+}
+.md th {
+  font-weight: 600;
+}
